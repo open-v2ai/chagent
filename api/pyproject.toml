@@ -1,0 +1,15 @@
+[project]
+name = "chagent-api"
+version = "0.0.1"
+requires-python = ">=3.12"
+description = "Chagent API"
+authors = [
+    { name="Open-V2AI", email="admin@open-v2ai.org" }
+]
+
+dependencies = [
+    "fastapi~=0.115.12",
+    "uvicorn~=0.34.2",
+    "pydantic~=2.11.3",
+    "python-dotenv~=1.1.0"
+]
