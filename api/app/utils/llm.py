@@ -1,0 +1,13 @@
+from openai import OpenAI
+
+from app.core.config import settings
+from app.schemas.message import MessageOut
+
+openai_client = OpenAI(api_key=settings.OPENAI_API_KEY, base_url=settings.OPENAI_BASE_URL)
+
+def create_llm_response(messages: list[MessageOut]) -> str:
+    _messages = []
+    for message in messages:
+        _messages.append({"role": message.role, "content": message.content})
+    response = openai_client.chat.completions.create(model=settings.OPENAI_MODEL, messages=_messages)
+    return response.choices[0].message.content

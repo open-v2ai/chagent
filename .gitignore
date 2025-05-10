@@ -162,3 +162,5 @@ plugins.jsonl
 
 # mise
 mise.toml
+
+deploy/volumes/

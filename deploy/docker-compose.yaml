@@ -1,0 +1,69 @@
+services:
+  # API service
+  api:
+    image: v2ai/chagent-api:latest
+    restart: always
+    environment:
+      POSTGRES_URL: ${POSTGRES_URL:-postgresql://postgres:123456@postgres:5432/chagent}
+      REDIS_URL: ${REDIS_URL:-redis://default:123456@redis:6379/0}
+      SECRET_KEY: ${SECRET_KEY:-C1H2A3G4E5N6T7}
+      MAIL_USERNAME: ${MAIL_USERNAME:-no-reply@tsing.ac.cn}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-Qwer1234.}
+      MAIL_FROM: ${MAIL_FROM:-no-reply@tsing.ac.cn}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_SERVER: ${MAIL_SERVER:-smtp.qiye.aliyun.com}
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - chagent-network
+
+  web:
+    image: v2ai/chagent-web:latest
+    restart: always
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://api:8000}
+    ports:
+      - 3000:3000
+    networks:
+      - chagent-network
+
+  postgres:
+    image: postgres:17.4-bookworm
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-123456}
+      POSTGRES_DB: ${POSTGRES_DB:-chagent}
+      PGDATA: ${PGDATA:-/var/lib/postgresql/data/pgdata}
+    volumes:
+      - ./volumes/db/data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ 'CMD', 'pg_isready', '-h', 'postgres', '-U', '${POSTGRES_USER:-postgres}', '-d', '${POSTGRES_DB:-chagent}' ]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks:
+      - chagent-network
+
+  # The redis cache.
+  redis:
+    image: redis:7.2.4-alpine
+    restart: always
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD:-123456}
+    volumes:
+      - ./volumes/redis/data:/data
+    command: redis-server --requirepass ${REDIS_PASSWORD:-123456} --save 60 1 --loglevel warning
+    healthcheck:
+      test: [ 'CMD', 'redis-cli', 'ping' ]
+    networks:
+      - chagent-network
+
+networks:
+  chagent-network:
+    driver: bridge
+    internal: true
