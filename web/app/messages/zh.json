@@ -24,5 +24,10 @@
   "NEW_CHAT_PLACEHOLDER": "请输入新的对话内容...",
   "SEND": "发送",
   "NEW_CHAT": "新对话",
-  "HELLO_WORLD": "👋 你好世界"
+  "HELLO_WORLD": "👋 你好世界",
+  "ASSISTANT": "助手",
+  "USER": "用户",
+  "ENTER_QUESTION": "请输入你的问题...",
+  "TASK_EXECUTION": "任务执行过程与结果",
+  "TASK_EXECUTION_DESC": "这里展示任务执行的详细过程和最终结果。"
 } 

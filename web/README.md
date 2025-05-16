@@ -13,6 +13,14 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 First, run the development server:
 
 ```bash
+cd ./web
+
+# Install dependencies
+pnpm install
+
+cp .env.example .env
+# Edit .env file
+
 pnpm dev
 ```
 
@@ -30,9 +38,19 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 ## Deploy with Docker
 
 ```bash
-docker build -t chagent-web:0.1 .
+cd ./web
 
-docker run -d -p 3000:3000 --name chagent-web chagent-web:0.1
+docker build -t chagent-web:0.1.0 .
+
+cp .env.example .env
+# Edit .env file
+
+docker run -d --name chagent-web \
+  -p 3000:3000 \
+  -v $(pwd)/.env:/app/.env \
+  chagent-web:0.1.0
+
+# open http://127.0.0.1:3000
 ```
 
 ## Color Theme

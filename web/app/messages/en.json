@@ -24,5 +24,10 @@
   "NEW_CHAT_PLACEHOLDER": "Please enter new chat content...",
   "SEND": "Send",
   "NEW_CHAT": "New Chat",
-  "HELLO_WORLD": "👋 Hello World"
+  "HELLO_WORLD": "👋 Hello World",
+  "ASSISTANT": "Assistant",
+  "USER": "User",
+  "ENTER_QUESTION": "Enter your question...",
+  "TASK_EXECUTION": "Task Execution Process and Results",
+  "TASK_EXECUTION_DESC": "This area shows the detailed process and final results of task execution."
 } 

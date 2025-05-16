@@ -12,7 +12,8 @@ services:
       MAIL_FROM: ${MAIL_FROM:-no-reply@tsing.ac.cn}
       MAIL_PORT: ${MAIL_PORT:-587}
       MAIL_SERVER: ${MAIL_SERVER:-smtp.qiye.aliyun.com}
-
+    ports:
+      - 8000:8000
     depends_on:
       postgres:
         condition: service_healthy
@@ -66,4 +67,3 @@ services:
 networks:
   chagent-network:
     driver: bridge
-    internal: true

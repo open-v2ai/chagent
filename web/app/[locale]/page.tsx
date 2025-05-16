@@ -31,6 +31,7 @@ export default function Page() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [currentPage, setCurrentPage] = useState<'new' | 'chat'>(() => (chats.length > 0 ? 'chat' : 'new'));
   const [currentChat, setCurrentChat] = useState<Chat | null>(() => (chats.length > 0 ? chats[0] : null));
+  const [isNewChat, setIsNewChat] = useState(false);
   const router = useRouter();
   const t = useTranslations();
   const [taskPanelOpen, setTaskPanelOpen] = useState(true);
@@ -120,6 +121,7 @@ export default function Page() {
                 onChatCreated={async (chat) => {
                   setCurrentChat(chat);
                   setCurrentPage('chat');
+                  setIsNewChat(true);
                   await fetchChats();
                 }}
               />
@@ -128,6 +130,8 @@ export default function Page() {
               <ChatContentPage
                 chat={currentChat}
                 taskPanelOpen={taskPanelOpen}
+                isNewChat={isNewChat}
+                setIsNewChat={setIsNewChat}
               />
             )}
           </div>

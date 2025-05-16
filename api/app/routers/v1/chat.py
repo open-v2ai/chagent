@@ -1,11 +1,12 @@
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
 
 from app.schemas.chat import ChatCreate, ChatUpdate, ChatOut
 from app.crud.chat import create_chat, update_chat, soft_delete_chat, get_all_chats, get_chat
 from app.dependencies.db import SessionDep, UserDep
 from app.schemas.message import MessageOut, MessageCreate
 from app.crud.message import get_all_messages, create_message
-from app.utils.llm import create_llm_response
+from app.utils.llm import create_llm_response, create_llm_response_stream
 
 
 chat_router = APIRouter(prefix="/chat")
@@ -13,30 +14,33 @@ chat_router = APIRouter(prefix="/chat")
 @chat_router.post("/", response_model=ChatOut)
 def create_chat_api(chat_in: ChatCreate, session: SessionDep, user: UserDep) -> ChatOut:
     chat = create_chat(chat_in, session, user)
-    chat_out = ChatOut.model_validate(chat)
-    # Create user message
-    user_message = create_message(MessageCreate(chat_id=chat.id, content=chat_in.content, role="user"), session)
-    chat_out.messages.append(MessageOut.model_validate(user_message))
-
-    # Generate LLM response content
-    llm_response_content = create_llm_response([user_message])
-    # Create assistant message
-    assistant_message = create_message(MessageCreate(chat_id=chat.id, content=llm_response_content, role="assistant"), session)
-    chat_out.messages.append(MessageOut.model_validate(assistant_message))
-    return chat_out
+    return chat
 
 @chat_router.post("/message", response_model=list[MessageOut])
-def create_chat_message_api(message_in: MessageCreate, session: SessionDep, user: UserDep) -> list[MessageOut]:
+async def create_chat_message_api(message_in: MessageCreate, session: SessionDep, user: UserDep, stream: bool = False):
     messages = get_all_messages(message_in.chat_id, session)
+    messages = [MessageOut.model_validate(m) for m in messages]
 
     # Create user message
     user_message = create_message(message_in, session)
     messages.append(user_message)
-    # Generate LLM response content
-    llm_response_content = create_llm_response(messages)
-    # Create assistant message
-    assistant_message = create_message(MessageCreate(chat_id=message_in.chat_id, content=llm_response_content, role="assistant"), session)
-    return [user_message, assistant_message]
+
+    if not stream:
+        # Normal mode
+        llm_response_content = create_llm_response(messages)
+        # Create assistant message
+        assistant_message = create_message(MessageCreate(chat_id=message_in.chat_id, content=llm_response_content, role="assistant"), session)
+        return [user_message, assistant_message]
+    else:
+        # Streaming mode
+        async def stream_gen():
+            content_acc = ""
+            async for chunk in create_llm_response_stream(messages):
+                content_acc += chunk
+                yield chunk
+            # Save assistant message after generation is complete
+            create_message(MessageCreate(chat_id=message_in.chat_id, content=content_acc, role="assistant"), session)
+        return StreamingResponse(stream_gen(), media_type="text/plain")
 
 
 @chat_router.put("/{chat_id}", response_model=ChatOut)
@@ -56,14 +60,7 @@ def delete_chat_api(chat_id: int, session: SessionDep, user: UserDep) -> ChatOut
 @chat_router.get("/", response_model=list[ChatOut])
 def get_all_chats_api(session: SessionDep, user: UserDep) -> list[ChatOut]:
     chats = get_all_chats(session, user)
-    result = []
-    for chat in chats:
-        messages = get_all_messages(chat.id, session)
-        chat_out = ChatOut.model_validate(chat)
-        chat_out_dict = chat_out.model_dump()
-        chat_out_dict["messages"] = [MessageOut.model_validate(m) for m in messages]
-        result.append(chat_out_dict)
-    return result
+    return chats
 
 @chat_router.get("/{chat_id}", response_model=ChatOut)
 def get_chat_api(chat_id: int, session: SessionDep, user: UserDep) -> ChatOut:

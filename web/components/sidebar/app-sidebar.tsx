@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
 import { PlusCircleIcon, Command } from "lucide-react"
 import { useTranslations } from 'next-intl';
@@ -33,6 +33,21 @@ export function AppSidebar({ onSelectChat, onNewChat, chats, currentChatId, ...p
   const t = useTranslations();
   const [email] = useState('not_found@example.com');
 
+  // Handle new chat shortcut
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if ((event.metaKey || event.ctrlKey) && event.key === 'i') {
+      event.preventDefault();
+      onNewChat?.();
+    }
+  }, [onNewChat]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown]);
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -59,7 +74,7 @@ export function AppSidebar({ onSelectChat, onNewChat, chats, currentChatId, ...p
         </SidebarMenu>
         <SidebarMenu>
           <SidebarMenuItem className="flex items-center gap-2">
-            {/* 新建聊天按钮 */}
+            {/* New Chat Button */}
             <SidebarMenuButton
               tooltip="New Chat"
               className="text-purple-500 text-lg duration-200 hover:text-purple-800"
@@ -69,14 +84,14 @@ export function AppSidebar({ onSelectChat, onNewChat, chats, currentChatId, ...p
               <span>{t('NEW_CHAT')}</span>
               <SidebarMenuBadge className="ml-2 flex items-center gap-1 text-xs text-gray-300">
                 <Command className="w-3 h-3" />
-                <span>N</span>
+                <span>I</span>
               </SidebarMenuBadge>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent className="border-y">
-        {/* 聊天列表，点击时调用 onSelectChat */}
+        {/* Chat list, calls onSelectChat when clicked */}
         <NavChatList
           chats={chats}
           onSelectChat={onSelectChat}

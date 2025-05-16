@@ -5,9 +5,14 @@ const API_URL_V1 = `${API_URL}/api/v1`;
 
 type FetchOptions = RequestInit & {
     auth?: boolean;
+    stream?: boolean;
 };
 
-export async function fetcher<T>(url: string, options: FetchOptions = {}): Promise<T> {
+export async function fetcher<T>(
+    url: string,
+    options: FetchOptions = {},
+    onData?: (chunk: string) => void
+): Promise<T | void> {
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
     };
@@ -24,7 +29,7 @@ export async function fetcher<T>(url: string, options: FetchOptions = {}): Promi
         Object.assign(headers, options.headers);
     }
 
-    // 自动加上 Authorization
+    // Automatically add Authorization header
     if (options.auth) {
         const token = await getValidAccessToken();
         if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -37,8 +42,24 @@ export async function fetcher<T>(url: string, options: FetchOptions = {}): Promi
 
     if (!res.ok) {
         const error = await res.json().catch(() => ({}));
-        throw new Error(error.message || '请求失败');
+        throw new Error(error.message || 'Request failed');
     }
 
-    return res.json();
+    if (options.stream) {
+        if (!res.body) throw new Error('Request failed');
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let done = false;
+        while (!done) {
+            const { value, done: doneReading } = await reader.read();
+            done = doneReading;
+            if (value) {
+                const chunk = decoder.decode(value, { stream: true });
+                onData && onData(chunk);
+            }
+        }
+        return;
+    } else {
+        return res.json();
+    }
 }
