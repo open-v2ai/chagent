@@ -79,6 +79,6 @@ docker build -t chagent-api:0.1.0 .
 
 docker run -d --name chagent-api \
     -p 8000:8000 \
-    -v $(pwd)/.env:/app/api/.env \
+    -v $(pwd)/.env:/app/.env \
     chagent-api:0.1.0
 ```

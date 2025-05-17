@@ -1,46 +1,39 @@
 # base image
-FROM python:3.12-slim-bookworm AS base
+FROM python:3.12.10-alpine3.21 AS base
 
-WORKDIR /app/api
+WORKDIR /app
 
-# Install uv
-ENV UV_VERSION=0.6.16
-
-RUN pip install --no-cache-dir uv==${UV_VERSION}
+RUN pip install --no-cache-dir uv==0.6.16
+# in China, you can use ustc mirror to speed up
+# RUN pip install --no-cache-dir uv==0.6.16 -i https://pypi.mirrors.ustc.edu.cn/simple
 
 FROM base AS packages
 
-# if you located in China, you can use aliyun mirror to speed up
-RUN sed -i 's@deb.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list.d/debian.sources
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends gcc g++ libc-dev libffi-dev libgmp-dev libmpfr-dev libmpc-dev libpq-dev
+RUN apk add --no-cache \
+    gcc g++ libc-dev libffi-dev gmp-dev mpfr-dev mpc1-dev libpq-dev
 
 # Install Python dependencies
 COPY pyproject.toml uv.lock ./
+
 RUN uv sync --locked
+# in China, you can use ustc mirror to speed up
+# RUN uv sync --locked -i https://pypi.mirrors.ustc.edu.cn/simple
 
 # production stage
 FROM base AS production
 
-RUN sed -i 's@deb.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list.d/debian.sources
+RUN apk add --no-cache libpq-dev
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends libpq-dev
-
-# set timezone
-ENV TZ=UTC
-
-WORKDIR /app/api
+WORKDIR /app
 
 EXPOSE 8000
 
 # Copy Python environment and packages
-ENV VIRTUAL_ENV=/app/api/.venv
+ENV VIRTUAL_ENV=/app/.venv
 COPY --from=packages ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
 
 # Copy source code
-COPY . /app/api/
+COPY . /app/
 
 ENTRYPOINT ["python", "-m", "app.main"]
