@@ -1,7 +1,6 @@
-import { getValidAccessToken } from "./token";
+import { getValidAccessToken, getApiUrl } from "./token";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const API_URL_V1 = `${API_URL}/api/v1`;
+const API_URL_V1 = `${getApiUrl()}/api/v1`;
 
 type FetchOptions = RequestInit & {
     auth?: boolean;

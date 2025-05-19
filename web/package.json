@@ -37,6 +37,7 @@
     "@types/node": "22.15.14",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "eslint": "^9.27.0",
     "typescript": "^5"
   },
   "pnpm": {

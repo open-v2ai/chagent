@@ -10,7 +10,7 @@ class Settings:
     API_VERSION: str = os.getenv("API_VERSION", "0.0.1")
     API_HOST: str = os.getenv("API_HOST", "0.0.0.0")
     API_PORT: int = int(os.getenv("API_PORT", 8000))
-    API_RELOAD: bool = os.getenv("API_RELOAD", "True").lower() in ("true", "1", "yes")
+    API_RELOAD: bool = os.getenv("API_RELOAD", "False").lower() in ("true", "1", "yes")
     
     # database
     POSTGRES_URL: str = os.getenv("POSTGRES_URL")

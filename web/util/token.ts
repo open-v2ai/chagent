@@ -1,5 +1,16 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const API_URL_V1 = `${API_URL}/api/v1`;
+export function getApiUrl() {
+  console.log(process.env.NODE_ENV);
+  if (process.env.NODE_ENV === 'development') {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  if (typeof window !== 'undefined') {
+    console.log(window.location.origin);
+    return window.location.origin;
+  }
+  return 'http://localhost:8080';
+}
+
+const API_URL_V1 = `${getApiUrl()}/api/v1`;
 
 function getTokenExp(token: string): number | null {
   try {
