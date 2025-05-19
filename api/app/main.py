@@ -21,6 +21,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title=settings.API_NAME, version=settings.API_VERSION, lifespan=lifespan)
 
+# healthcheck endpoint
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
 # add CORS support
 app.add_middleware(
     CORSMiddleware,
