@@ -31,7 +31,16 @@ export interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 
 export function AppSidebar({ onSelectChat, onNewChat, chats, currentChatId, ...props }: AppSidebarProps) {
   const t = useTranslations();
-  const [email] = useState('not_found@example.com');
+  const [email, setEmail] = useState('not_found@example.com');
+
+  // Get email from local storage
+  useEffect(() => {
+    const email = localStorage.getItem('email');
+    console.log('email', email);
+    if (email) {
+      setEmail(email);
+    }
+  }, []);
 
   // Handle new chat shortcut
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
