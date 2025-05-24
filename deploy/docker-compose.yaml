@@ -31,6 +31,9 @@ services:
   web:
     image: v2ai/chagent-web:latest
     restart: always
+    environment:
+      HOSTNAME: ${HOSTNAME:-0.0.0.0}
+      PORT: ${PORT:-3000}
     networks:
       - bridge
 

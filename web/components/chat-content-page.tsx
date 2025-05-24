@@ -21,6 +21,8 @@ export default function ChatContentPage({ chat, taskPanelOpen = true, isNewChat,
   const hasSent = useRef(false);
   const t = useTranslations();
 
+
+
   useEffect(() => {
      // If chat is not newly created, request chat details
      if (!isNewChat) {
@@ -35,10 +37,11 @@ export default function ChatContentPage({ chat, taskPanelOpen = true, isNewChat,
 
      // If chat is newly created, send message
      if (isNewChat && !hasSent.current) {
-      setIsNewChat && setIsNewChat(false);
+      if (setIsNewChat) setIsNewChat(false);
       hasSent.current = true;
       handleSend(chat.content);
     }
+  // eslint-disable-next-line
   }, [chat.id]);
 
   useEffect(() => {
@@ -52,7 +55,7 @@ export default function ChatContentPage({ chat, taskPanelOpen = true, isNewChat,
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     if (content) {
-      let assistantMsg = { id: 0, content: '...', role: 'assistant', created_at: now, updated_at: now };
+      const assistantMsg = { id: 0, content: '...', role: 'assistant', created_at: now, updated_at: now };
       setMessages(prev => [...prev, assistantMsg]);
 
       if (stream) {

@@ -16,8 +16,6 @@ RUN apk add --no-cache \
 COPY pyproject.toml uv.lock ./
 
 RUN uv sync --locked
-# in China, you can use ustc mirror to speed up
-# RUN uv sync --locked -i https://pypi.mirrors.ustc.edu.cn/simple
 
 # production stage
 FROM base AS production
