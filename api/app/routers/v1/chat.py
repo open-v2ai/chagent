@@ -11,7 +11,7 @@ from app.utils.llm import create_llm_response, create_llm_response_stream
 
 chat_router = APIRouter(prefix="/chat")
 
-@chat_router.post("/", response_model=ChatOut)
+@chat_router.post("", response_model=ChatOut)
 def create_chat_api(chat_in: ChatCreate, session: SessionDep, user: UserDep) -> ChatOut:
     chat = create_chat(chat_in, session, user)
     return chat
@@ -57,7 +57,7 @@ def delete_chat_api(chat_id: int, session: SessionDep, user: UserDep) -> ChatOut
         raise HTTPException(status_code=404, detail="Chat not found")
     return chat
 
-@chat_router.get("/", response_model=list[ChatOut])
+@chat_router.get("", response_model=list[ChatOut])
 def get_all_chats_api(session: SessionDep, user: UserDep) -> list[ChatOut]:
     chats = get_all_chats(session, user)
     return chats
