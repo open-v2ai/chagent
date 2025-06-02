@@ -5,6 +5,7 @@ import type { Chat, Message } from '@/app/[locale]/types';
 import { fetcher } from '@/util/fetcher';
 import { useTranslations } from 'next-intl';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 
 function formatTime(ts: string) {
@@ -20,8 +21,7 @@ export default function ChatContentPage({ chat, taskPanelOpen = true, isNewChat,
   const [messages, setMessages] = useState<Message[]>([]);
   const hasSent = useRef(false);
   const t = useTranslations();
-
-
+  const [taskContent, setTaskContent] = useState('');
 
   useEffect(() => {
      // If chat is not newly created, request chat details
@@ -39,7 +39,7 @@ export default function ChatContentPage({ chat, taskPanelOpen = true, isNewChat,
      if (isNewChat && !hasSent.current) {
       if (setIsNewChat) setIsNewChat(false);
       hasSent.current = true;
-      handleSend(chat.content);
+      handleSend(chat.content, true);
     }
   // eslint-disable-next-line
   }, [chat.id]);
@@ -57,9 +57,11 @@ export default function ChatContentPage({ chat, taskPanelOpen = true, isNewChat,
     if (content) {
       const assistantMsg = { id: 0, content: '...', role: 'assistant', created_at: now, updated_at: now };
       setMessages(prev => [...prev, assistantMsg]);
+      setTaskContent('');
 
       if (stream) {
         let assistantContent = '';
+        let taskContent = '';
         await fetcher('/chat/message?stream=true',
           {
             method: 'POST',
@@ -69,12 +71,23 @@ export default function ChatContentPage({ chat, taskPanelOpen = true, isNewChat,
             stream: true,
           },
           (chunk: string) => {
-            assistantContent += chunk;
+            if (chunk.startsWith("<answer>")) {
+              if (assistantContent === '任务拆解中...') {
+                assistantContent = '';
+              }
+              assistantContent += chunk.replace(/<answer>|<\/answer>/g, "");
+            } else if (chunk.startsWith("<task>")) {
+              assistantContent = "任务拆解中...";
+              taskContent += chunk.replace(/<task>|<\/task>/g, "");
+            } else {
+              assistantContent += chunk;
+            }
             setMessages(prev => {
               const newMsgs = [...prev];
               newMsgs[newMsgs.length - 1] = { ...assistantMsg, content: assistantContent };
               return newMsgs;
             });
+            setTaskContent(taskContent);
           }
         );
       } else {
@@ -170,7 +183,7 @@ export default function ChatContentPage({ chat, taskPanelOpen = true, isNewChat,
               onClick={async () => {
                 const content = input.trim();
                 if (content) {
-                  await handleSend(content, false);
+                  await handleSend(content, true);
                 }
               }}
             >
@@ -182,9 +195,11 @@ export default function ChatContentPage({ chat, taskPanelOpen = true, isNewChat,
       {/* Right task execution area, can be expanded/collapsed */}
       <div className={`relative flex flex-col ${taskPanelOpen ? 'flex-[1_1_0%] max-w-xl' : 'w-0 min-w-0 p-0 border-0'} h-full min-h-0 bg-gray-50 rounded-r border-l border-gray-200 transition-all duration-300`}> 
         {taskPanelOpen ? (
-          <div className="flex-1 min-h-0 overflow-y-auto p-4">
+          <div className="sticky top-0 p-4 overflow-y-auto">
             <div className="text-lg font-bold mb-4">{t('TASK_EXECUTION')}</div>
-            <div className="text-gray-500">{t('TASK_EXECUTION_DESC')}</div>
+            <div className="text-gray-500">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{taskContent ? taskContent : t('TASK_EXECUTION_DESC')}</ReactMarkdown>
+            </div>
           </div>
         ) : null}
       </div>

@@ -2,11 +2,10 @@
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Requirements
-
-- Node.js: >= v20.18.0
-- npm: >= 10.8.2
-- pnpm: >= 10.10.0
+> ⚠️ Requirements:
+> - Node.js: >= 18.19.0
+> - npm: >= 10.8.2
+> - pnpm: >= 10.11.0
 
 ## Getting Started
 

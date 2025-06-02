@@ -1,4 +1,4 @@
-from typing import Iterator
+from typing import AsyncIterator
 
 from openai import OpenAI
 
@@ -14,7 +14,7 @@ def create_llm_response(messages: list[MessageOut]) -> str:
     response = openai_client.chat.completions.create(model=settings.OPENAI_MODEL, messages=_messages)
     return response.choices[0].message.content
 
-async def create_llm_response_stream(messages: list[MessageOut]) -> Iterator[str]:
+async def create_llm_response_stream(messages: list[MessageOut]) -> AsyncIterator[str]:
     _messages = []
     for message in messages:
         _messages.append({"role": message.role, "content": message.content})

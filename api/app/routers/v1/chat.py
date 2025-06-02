@@ -7,7 +7,7 @@ from app.dependencies.db import SessionDep, UserDep
 from app.schemas.message import MessageOut, MessageCreate
 from app.crud.message import get_all_messages, create_message
 from app.utils.llm import create_llm_response, create_llm_response_stream
-
+from app.utils.agent import run_agent
 
 chat_router = APIRouter(prefix="/chat")
 
@@ -32,13 +32,14 @@ async def create_chat_message_api(message_in: MessageCreate, session: SessionDep
         assistant_message = create_message(MessageCreate(chat_id=message_in.chat_id, content=llm_response_content, role="assistant"), session)
         return [user_message, assistant_message]
     else:
-        # Streaming mode
         async def stream_gen():
             content_acc = ""
-            async for chunk in create_llm_response_stream(messages):
-                content_acc += chunk
-                yield chunk
-            # Save assistant message after generation is complete
+            all_messages = "\n".join([f"{msg.role}: {msg.content}" for msg in messages])
+            async for r in run_agent(all_messages):
+                if r.startswith("<answer>"):
+                    content_acc += r.replace("<answer>", "").replace("</answer>", "")
+                print(r)
+                yield r
             create_message(MessageCreate(chat_id=message_in.chat_id, content=content_acc, role="assistant"), session)
         return StreamingResponse(stream_gen(), media_type="text/plain")
 
