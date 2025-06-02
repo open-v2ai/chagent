@@ -38,17 +38,24 @@ Chagent API is the core component of Chagent, responsible for handling all the A
 ├── alembic/                  # Database migration directory (if using Alembic)
 ├── scripts/                  # Scripts directory
 ├── .env.example             # Environment variables file
-├── requirements.txt
+├── pyproject.toml           # Project configuration file
+├── uv.lock                  # Dependency lock file
 ├── README.md
 ```
 
 ## Get Started
 
-### Install Postgres with Docker
+> ⚠️ Requirements:
+> - Python: >= 3.10 (3.12.10 recommended)
+> - uv: >= 0.6 (0.6.16 recommended)
+
+### Install database with Docker
 
 ```bash
-bash script/run_postgres.sh
-bash script/run_redis.sh
+cd ./api
+
+bash scripts/run_postgres.sh
+bash scripts/run_redis.sh
 ```
 
 ### Configuration
@@ -64,11 +71,11 @@ use [uv](https://docs.astral.sh/uv/getting-started/installation/) to install the
 
 ```bash
 uv sync
-```
 
-```bash
+# activate virtual environment
 source .venv/bin/activate
 
+# run in dev mode in port 8000
 python -m app.main
 ```
 
@@ -76,6 +83,9 @@ python -m app.main
 
 ```bash
 docker build -t chagent-api:0.1.0 .
+
+cp .env.example .env
+# Edit .env file
 
 docker run -d --name chagent-api \
     -p 8000:8000 \
