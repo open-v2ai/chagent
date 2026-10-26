@@ -4,6 +4,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
+def _required_signing_key(name: str) -> str:
+    """Refuse missing, short or example signing keys before the API starts."""
+    value = (os.getenv(name) or "").strip()
+    placeholders = ("replace_", "change_", "your_", "your-", "<")
+    if len(value.encode("utf-8")) < 32 or value.lower().startswith(placeholders):
+        raise RuntimeError(
+            f"{name} must be configured with a unique random secret of at least 32 bytes"
+        )
+    return value
+
+
 class Settings:
     # api
     API_NAME: str = os.getenv("API_NAME", "API")
@@ -17,7 +29,7 @@ class Settings:
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
     # security
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "default-secret")
+    SECRET_KEY: str = _required_signing_key("SECRET_KEY")
 
     # email service
     MAIL_USERNAME: str = os.getenv("MAIL_USERNAME")
