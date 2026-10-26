@@ -126,3 +126,7 @@ We welcome contributions to Chagent! Please see our [CONTRIBUTING.md](CONTRIBUTI
 
 Chagent is released under the [Apache License 2.0](LICENSE).
 
+
+## JWT signing key
+
+Set `SECRET_KEY` to a unique random value before starting the API or Compose stack. Generate it with `openssl rand -hex 32` and store it only in your private environment configuration. Missing, short and example keys are rejected; no fixed signing fallback is provided. If a deployment previously used a shared default, rotate that deployment's key and invalidate its old sessions.
